@@ -1,0 +1,147 @@
+# flash-game
+flash game
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <title>Vocabulary Quiz</title>
+  <style>
+    body { font-family: sans-serif; max-width: 700px; margin: 2em auto; }
+    .question { margin-bottom: 1.5em; }
+    .question h3 { margin: 0 0 .5em; }
+    .choices label { display: block; cursor: pointer; }
+    button { padding: .5em 1em; font-size: 1em; }
+    #results { margin-top: 2em; font-size: 1.2em; }
+    .correct { color: green; }
+    .incorrect { color: red; }
+  </style>
+</head>
+<body>
+
+  <h1>Vocabulary Quiz</h1>
+  <div id="quiz"></div>
+  <button id="submit">Submit</button>
+  <div id="results"></div>
+
+  <script>
+    // List of all terms with their correct definitions
+    const items = [
+      { term: "settlement", def: "a place where people establish a community" },
+      { term: "wince", def: "an involuntary grimace or shrinking movement" },
+      { term: "anomaly", def: "something that deviates from the norm" },
+      { term: "bear in mind", def: "to remember or consider" },
+      { term: "disregard", def: "to ignore or pay no attention to" },
+      { term: "exterminate", def: "to destroy completely, especially pests" },
+      { term: "intend to", def: "to plan or mean to do something" },
+      { term: "intolerable", def: "unable to be endured; unbearable" },
+      { term: "paucity of", def: "a scarcity or lack of something" },
+      { term: "reliant on", def: "dependent upon" },
+      { term: "remotely", def: "from a distance; slightly" },
+      { term: "seemingly", def: "apparently; as it appears" },
+      { term: "subjugate", def: "to bring under domination or control" },
+      { term: "thus", def: "therefore; in this way" },
+      { term: "senseless", def: "lacking meaning or sense; foolish" },
+      { term: "startled", def: "suddenly surprised or shocked" },
+      { term: "unintended", def: "not planned or meant" },
+      { term: "vulnerable", def: "susceptible to harm or attack" },
+      { term: "amidst", def: "in the middle of; among" },
+      { term: "deprive", def: "to take away or withhold something" },
+      { term: "detail", def: "an individual feature or fact" },
+      { term: "nurturing", def: "caring for and encouraging growth" },
+      { term: "preconceived", def: "formed before having full knowledge" },
+      { term: "roam", def: "to wander aimlessly" },
+      { term: "cramped", def: "uncomfortably small or restricted" },
+      { term: "hampered", def: "hindered or held back" },
+      { term: "ignite", def: "to catch fire or arouse emotion" },
+      { term: "malnourished", def: "suffering from inadequate nutrition" },
+      { term: "loyalist", def: "someone loyal to an established government" },
+      { term: "pervasive", def: "spreading widely throughout" },
+      { term: "prevail", def: "to prove more powerful or widespread" },
+      { term: "sentiment", def: "a view, feeling, or emotion" },
+      { term: "subtly", def: "in a manner that is not obvious" },
+      { term: "beamed into", def: "transmitted or projected by a beam" },
+      { term: "cast suspicion on", def: "to cause doubt about someone or something" },
+      { term: "deed", def: "an action or act" },
+      { term: "fluctuation", def: "an irregular rise and fall" },
+      { term: "gloom", def: "partial darkness or sadness" },
+      { term: "grinding conditions", def: "extremely harsh or relentless circumstances" },
+      { term: "impressionable", def: "easily influenced" },
+      { term: "incomprehensible", def: "impossible to understand" },
+      { term: "merchant", def: "a person who buys and sells goods" },
+      { term: "patronizing", def: "treating in a condescending manner" },
+      { term: "perception", def: "the way something is understood or interpreted" },
+      { term: "pity", def: "a feeling of sorrow or compassion" },
+      { term: "attempt", def: "an effort or try" },
+      { term: "indicate", def: "to point out or show" },
+      { term: "keen on", def: "enthusiastic or very interested in" },
+      { term: "merely", def: "only; just" },
+      { term: "relic", def: "a surviving object from the past" },
+      { term: "reside", def: "to live in a place" },
+      { term: "ambivalence", def: "mixed feelings or uncertainty" },
+      { term: "anglophile", def: "a person who admires England or English culture" },
+      { term: "desultory", def: "lacking a clear plan or enthusiasm" },
+      { term: "distinction", def: "a difference or excellence" },
+      { term: "diverge from", def: "to differ or move apart" },
+      { term: "incentive", def: "something that motivates or encourages" },
+      { term: "indigenous", def: "native to a particular region" }
+    ];
+
+    // Fisher–Yates shuffle
+    function shuffle(arr) {
+      const a = arr.slice();
+      for (let i = a.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [a[i], a[j]] = [a[j], a[i]];
+      }
+      return a;
+    }
+
+    // Build questions with randomized choices
+    const questions = items.map((item, idx) => {
+      // pick 3 wrong defs
+      const wrongs = items
+        .filter((_, i) => i !== idx)
+        .map(o => o.def);
+      const choices = shuffle([ item.def, ...shuffle(wrongs).slice(0, 3) ]);
+      return { term: item.term, choices, correct: item.def };
+    });
+
+    const quizDiv = document.getElementById('quiz');
+    questions.forEach((q, i) => {
+      const qBlock = document.createElement('div');
+      qBlock.className = 'question';
+      qBlock.innerHTML = `
+        <h3>Q${i+1}. ${q.term}</h3>
+        <div class="choices">
+          ${q.choices.map((c, j) =>
+            `<label>
+              <input type="radio" name="q${i}" value="${c}">
+              ${String.fromCharCode(97 + j)}) ${c}
+            </label>`
+          ).join('')}
+        </div>
+      `;
+      quizDiv.appendChild(qBlock);
+    });
+
+    document.getElementById('submit').addEventListener('click', () => {
+      let score = 0;
+      const resultsDiv = document.getElementById('results');
+      resultsDiv.innerHTML = '';
+      questions.forEach((q, i) => {
+        const selector = `input[name="q${i}"]:checked`;
+        const selected = document.querySelector(selector);
+        const isCorrect = selected && selected.value === q.correct;
+        if (isCorrect) score++;
+        const div = document.createElement('div');
+        div.textContent = `Q${i+1}: ${isCorrect ? 'Correct' : 'Wrong'} — Correct: "${q.correct}"`;
+        div.className = isCorrect ? 'correct' : 'incorrect';
+        resultsDiv.appendChild(div);
+      });
+      const total = document.createElement('h2');
+      total.textContent = `Your Score: ${score} / ${questions.length}`;
+      resultsDiv.prepend(total);
+    });
+  </script>
+</body>
+</html>
